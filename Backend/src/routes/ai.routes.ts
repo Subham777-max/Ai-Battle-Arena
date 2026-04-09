@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { invokeGraph } from "../controllers/ai.controller.js";
+import { getAllResponses, invokeGraph } from "../controllers/ai.controller.js";
 
 const router = Router();
 
@@ -10,5 +10,13 @@ const router = Router();
  *  @access Public 
  */
 router.post("/invoke",invokeGraph);
+
+/**
+ *  @route GET /api/ai/responses
+ *  @desc Retrieve all past problem statements, solutions, and judgments from the database.
+ *  @access Public
+ */
+router.get("/responses", getAllResponses);
+
 
 export default router;
