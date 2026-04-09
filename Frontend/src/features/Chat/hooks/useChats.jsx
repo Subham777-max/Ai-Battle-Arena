@@ -35,5 +35,5 @@ export function useChats() {
             setLoading(false);
         }
     }
-    return { currentChat, chats, loading, invokeChat, fetchAllChats };
+    return { currentChat, setCurrentChat, chats, setChats, loading, invokeChat, fetchAllChats };
 }

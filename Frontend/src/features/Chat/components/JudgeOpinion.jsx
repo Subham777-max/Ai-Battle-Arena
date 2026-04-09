@@ -8,10 +8,12 @@ const ScoreBar = ({ label, score, colorClass }) => (
       <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-[0.15em]">{label}</span>
       <span className={cn("text-lg font-black tracking-tighter", colorClass)}>{score}<span className="text-[9px] text-muted-foreground ml-0.5 opacity-50">/10</span></span>
     </div>
-    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
       <div 
-        className={cn("h-full transition-all duration-1000 ease-out", colorClass.replace('text-', 'bg-'))}
-        style={{ width: `${score * 10}%`, boxShadow: `0 0 15px rgba(59, 130, 246, 0.2)` }}
+        className={cn("h-full transition-all duration-1000 ease-out rounded-full", 
+          score >= 9 ? 'bg-green-500/70' : score >= 7 ? 'bg-blue-500/70' : 'bg-red-500/70'
+        )}
+        style={{ width: `${Math.min(score * 10, 100)}%` }}
       />
     </div>
   </div>
@@ -63,19 +65,19 @@ const JudgeOpinion = ({ judge }) => {
             </div>
 
             <div className="flex items-center gap-8 md:min-w-[300px]">
-              <ScoreBar label="Engine Alpha" score={score1} colorClass={getScoreColor(score1)} />
-              <ScoreBar label="Engine Beta" score={score2} colorClass={getScoreColor(score2)} />
+              <ScoreBar label="Mistral" score={score1} colorClass={getScoreColor(score1)} />
+              <ScoreBar label="Cohere" score={score2} colorClass={getScoreColor(score2)} />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ReasonCard 
-              title="Model A" 
+              title="Mistral" 
               reasoning={judge.solution_1_reasoning} 
               isWinner={score1 >= score2} 
             />
             <ReasonCard 
-              title="Model B" 
+              title="Cohere" 
               reasoning={judge.solution_2_reasoning} 
               isWinner={score2 > score1} 
             />
