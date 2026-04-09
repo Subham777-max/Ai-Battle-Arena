@@ -3,6 +3,7 @@ import ChatPage from '../features/Chat/pages/ChatPage';
 import HistoryPage from '../features/Chat/pages/HistoryPage';
 import LeaderboardPage from '../features/Chat/pages/LeaderboardPage';
 import ModelBenchPage from '../features/Chat/pages/ModelBenchPage';
+import SettingsPage from '../features/Chat/pages/SettingsPage';
 
 const AppRoutes = ({ onMenuClick }) => {
   return (
@@ -11,6 +12,7 @@ const AppRoutes = ({ onMenuClick }) => {
       <Route path="/history" element={<HistoryPage onMenuClick={onMenuClick} />} />
       <Route path="/leaderboard" element={<LeaderboardPage onMenuClick={onMenuClick} />} />
       <Route path="/models" element={<ModelBenchPage onMenuClick={onMenuClick} />} />
+      <Route path="/settings" element={<SettingsPage onMenuClick={onMenuClick} />} />
     </Routes>
   );
 };
