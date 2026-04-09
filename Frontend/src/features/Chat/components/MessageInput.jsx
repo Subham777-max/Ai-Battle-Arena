@@ -19,7 +19,7 @@ const MessageInput = ({ onSend, disabled }) => {
   };
 
   return (
-    <div className="fixed bottom-0 left-64 right-0 p-6 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none">
+    <div className="fixed bottom-0 left-0 md:left-64 right-0 p-6 bg-linear-to-t from-background via-background/90 to-transparent pointer-events-none">
       <div className="max-w-4xl mx-auto w-full pointer-events-auto">
         <form 
           onSubmit={handleSubmit}
