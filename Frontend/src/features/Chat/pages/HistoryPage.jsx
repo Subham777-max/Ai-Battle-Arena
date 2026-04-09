@@ -1,24 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, History, Trash2, ChevronRight, Activity, Zap, Terminal } from 'lucide-react';
 import MobileHeader from '../../Theme/MobileHeader';
 import { cn } from '../../../utils/cn';
+import { useChats } from '../hooks/useChats';
 
-const mockHistory = [
-  // ... same mockHistory ...
-  { id: 1, title: "Factorial function in JavaScript", date: "2 mins ago", engines: ["Lambda-1", "Sigma-8"], winner: "Lambda-1" },
-  { id: 2, title: "Optimizing SQL query for large datasets", date: "1 hour ago", engines: ["Omega-4", "Sigma-8"], winner: "Sigma-8" },
-  { id: 3, title: "Responsive CSS grid with glassmorphism", date: "3 hours ago", engines: ["Vinci-Pro", "Lambda-1"], winner: "Vinci-Pro" },
-  { id: 4, title: "Binary Search Tree implementation in C++", date: "Yesterday", engines: ["Lambda-1", "Sigma-8"], winner: "Lambda-1" },
-  { id: 5, title: "Authentication middleware in Node.js", date: "2 days ago", engines: ["Sigma-8", "Omega-4"], winner: "Omega-4" },
-];
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
 
-const HistoryCard = ({ battle }) => (
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  
+  return date.toLocaleDateString();
+};
+
+const getWinner = (chat) => {
+  const score1 = chat.judge?.solution_1_score || 0;
+  const score2 = chat.judge?.solution_2_score || 0;
+  return score1 > score2 ? 'Mistral' : score2 > score1 ? 'Cohere' : 'Tie';
+};
+
+const HistoryCard = ({ battle, onClick }) => (
   <motion.div 
     layout
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, scale: 0.95 }}
+    onClick={onClick}
     className="glass-dark rounded-xl p-4 border-white/5 hover:border-primary/20 transition-all group cursor-pointer relative overflow-hidden"
   >
     <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-100 transition-opacity">
@@ -33,14 +50,14 @@ const HistoryCard = ({ battle }) => (
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
           <h3 className="font-bold text-sm text-foreground truncate group-hover:text-primary transition-colors">
-            {battle.title}
+            {battle.problem}
           </h3>
-          <span className="text-[10px] text-muted-foreground/50 whitespace-nowrap ml-4">{battle.date}</span>
+          <span className="text-[10px] text-muted-foreground/50 whitespace-nowrap ml-4">{battle.formattedDate}</span>
         </div>
         
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-            {battle.engines[0]} vs {battle.engines[1]}
+            Mistral vs Cohere
           </div>
           <div className="flex items-center gap-1 text-[9px] font-black text-judge-good uppercase tracking-widest">
             <Zap className="w-2.5 h-2.5 fill-judge-good" />
@@ -54,10 +71,27 @@ const HistoryCard = ({ battle }) => (
 
 const HistoryPage = ({ onMenuClick }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+  const { chats, fetchAllChats, setCurrentChat } = useChats();
+
+  useEffect(() => {
+    fetchAllChats();
+  }, []);
+
+  const processedChats = chats.map(chat => ({
+    ...chat,
+    formattedDate: formatDate(chat.createdAt),
+    winner: getWinner(chat)
+  }));
   
-  const filteredHistory = mockHistory.filter(battle => 
-    battle.title.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredHistory = processedChats.filter(battle => 
+    battle.problem.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleHistoryClick = (chat) => {
+    setCurrentChat(chat);
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -76,7 +110,7 @@ const HistoryPage = ({ onMenuClick }) => {
               </h1>
               <p className="text-[11px] text-muted-foreground font-medium opacity-60 uppercase tracking-widest flex items-center gap-1.5">
                 <Activity className="w-3 h-3" />
-                {mockHistory.length} Sessions Logged
+                {chats.length} Sessions Logged
               </p>
             </div>
           </div>
@@ -90,7 +124,7 @@ const HistoryPage = ({ onMenuClick }) => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search battle archives..."
+              placeholder="Search battles..."
               className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/30"
             />
           </div>
@@ -117,8 +151,8 @@ const HistoryPage = ({ onMenuClick }) => {
         <div className="grid gap-4 overflow-hidden py-1">
           <AnimatePresence mode='popLayout'>
             {filteredHistory.length > 0 ? (
-              filteredHistory.map((battle) => (
-                <HistoryCard key={battle.id} battle={battle} />
+              filteredHistory.map((battle, idx) => (
+                <HistoryCard key={idx} battle={battle} onClick={() => handleHistoryClick(battle)} />
               ))
             ) : (
               <motion.div 
