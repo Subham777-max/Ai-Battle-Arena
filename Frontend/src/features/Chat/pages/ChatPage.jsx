@@ -6,37 +6,17 @@ import JudgeOpinion from '../components/JudgeOpinion';
 import MessageInput from '../components/MessageInput';
 import MobileHeader from '../../Theme/MobileHeader';
 import useIsMobile from '../../../hooks/useIsMobile';
+import { useChats } from '../hooks/useChats';
 import { Sparkles, Terminal, Activity, Zap, Loader2 } from 'lucide-react';
-
-const mockData = {
-    // ... same mockData ...
-    "problem": "write an factorial function in javascript",
-    "solution_1": "Here's a factorial function in JavaScript implemented in three different ways:\n\n### 1. **Iterative Approach (using a loop)**\n```javascript\nfunction factorial(n) {\n    if (n < 0) return NaN; \n    let result = 1;\n    for (let i = 2; i <= n; i++) {\n        result *= i;\n    }\n    return result;\n}\n```\n\n### 2. **Recursive Approach**\n```javascript\nfunction factorial(n) {\n    if (n < 0) return NaN;\n    if (n === 0 || n === 1) return 1;\n    return n * factorial(n - 1);\n}\n```",
-    "solution_2": "Certainly! Below is a simple implementation of a factorial function in JavaScript:\n\n### Recursive Approach:\n```javascript\nfunction factorialRecursive(n) {\n    if (n < 0) {\n        throw new Error(\"Factorial is not defined negative.\");\n    }\n    if (n === 0 || n === 1) {\n        return 1;\n    }\n    return n * factorialRecursive(n - 1);\n}\n```",
-    "judge": {
-        "solution_1_score": 10,
-        "solution_2_score": 9,
-        "solution_1_reasoning": "Solution 1 is excellent because it provides distinct implementations and correctly handles edge cases like negative inputs.",
-        "solution_2_reasoning": "Solution 2 is very good and provides clear explanations, but lacks the performance considerations found in Solution 1."
-    }
-};
 
 const ChatPage = ({ onMenuClick }) => {
   const isMobile = useIsMobile(1024);
-  const [currentPrompt, setCurrentPrompt] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [showArena, setShowArena] = useState(false);
+  const [currentPrompt, setCurrentPrompt] = useState("");
+  const { currentChat, loading, invokeChat } = useChats();
 
   const handleSend = (value) => {
     setCurrentPrompt(value);
-    setIsGenerating(true);
-    setShowArena(false);
-
-    // Simulate AI Generation
-    setTimeout(() => {
-      setIsGenerating(false);
-      setShowArena(true);
-    }, 1500);
+    invokeChat(value);
   };
 
   return (
@@ -80,12 +60,12 @@ const ChatPage = ({ onMenuClick }) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <PromptInput promptText={currentPrompt} />
+              <PromptInput promptText={currentChat?.problem} />
             </motion.div>
           )}
 
           <AnimatePresence mode="wait">
-            {isGenerating ? (
+            {loading ? (
               <motion.div 
                 key="loading"
                 initial={{ opacity: 0, y: 20 }}
@@ -101,7 +81,7 @@ const ChatPage = ({ onMenuClick }) => {
                   Analyzing architectural vectors...
                 </p>
               </motion.div>
-            ) : showArena ? (
+            ) : currentChat?.solution_1 && currentChat?.solution_2 ? (
               <motion.div 
                 key="arena"
                 className="space-y-10"
@@ -111,14 +91,14 @@ const ChatPage = ({ onMenuClick }) => {
               >
                 {/* Duel Grid */}
                 <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} items-stretch max-w-6xl mx-auto`}>
-                  <ModelSolution title="Engine Lambda-1" solution={mockData.solution_1} />
-                  <ModelSolution title="Engine Sigma-8" solution={mockData.solution_2} />
+                  <ModelSolution title="Mistral" solution={currentChat.solution_1} />
+                  <ModelSolution title="Cohere" solution={currentChat.solution_2} />
                 </div>
 
                 {/* Judge Section */}
-                <JudgeOpinion judge={mockData.judge} />
+                <JudgeOpinion judge={currentChat.judge} />
               </motion.div>
-            ) : !currentPrompt ? (
+            ) : !currentChat?.problem ? (
               <motion.div 
                 key="empty"
                 initial={{ opacity: 0 }}
@@ -140,7 +120,7 @@ const ChatPage = ({ onMenuClick }) => {
       </div>
 
       {/* Persistent Message Input */}
-      <MessageInput onSend={handleSend} disabled={isGenerating} />
+      <MessageInput onSend={handleSend} disabled={loading} />
     </div>
   );
 };
