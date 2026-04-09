@@ -75,7 +75,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             <div className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mb-3 px-1">
               Configuration
             </div>
-            <SidebarItem icon={LayoutDashboard} label="Model Bench" to="/bench" onClick={onClose} />
+            <SidebarItem icon={LayoutDashboard} label="Model Bench" to="/models" onClick={onClose} />
             <SidebarItem icon={Settings} label="Preferences" to="/settings" onClick={onClose} />
           </div>
         </nav>
