@@ -31,7 +31,7 @@ const responseSchema = new mongoose.Schema({
             default: ""
         }
     }
-})
+},{timestamps: true})
 
 const responseModel = mongoose.model("Response", responseSchema);
 
